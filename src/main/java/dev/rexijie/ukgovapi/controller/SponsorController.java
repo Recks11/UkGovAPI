@@ -25,6 +25,12 @@ public class SponsorController {
         this.sponsorService = sponsorService;
     }
 
+    @GetMapping("/fetch")
+    public Mono<Map<String, Boolean>> fetchSponsorList() {
+        return sponsorService.updateSponsorList()
+                        .map(status -> Map.of("status", status));
+    }
+
     @GetMapping
     public CorePublisher<?> getSponsor(@RequestParam Map<String, String> parameters) {
         if (parameters.containsKey("name")) return getSponsorByName(parameters.get("name"));

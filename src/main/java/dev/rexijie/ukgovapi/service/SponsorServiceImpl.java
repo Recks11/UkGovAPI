@@ -1,6 +1,6 @@
 package dev.rexijie.ukgovapi.service;
 
-import dev.rexijie.ukgovapi.config.SponsorProperties;
+import dev.rexijie.ukgovapi.batch.DocumentDownloader;
 import dev.rexijie.ukgovapi.converter.SponsorMapper;
 import dev.rexijie.ukgovapi.errors.SponsorNotFoundException;
 import dev.rexijie.ukgovapi.model.Sponsor;
@@ -15,16 +15,21 @@ import java.util.stream.BaseStream;
 @Service
 public class SponsorServiceImpl implements SponsorService {
 
-    private final SponsorProperties sponsorProperties;
+    private final DocumentDownloader documentDownloader;
 
-    public SponsorServiceImpl(SponsorProperties sponsorProperties) {
-        this.sponsorProperties = sponsorProperties;
+    public SponsorServiceImpl(DocumentDownloader documentDownloader) {
+        this.documentDownloader = documentDownloader;
+    }
+
+    @Override
+    public Mono<Boolean> updateSponsorList() {
+        return Mono.fromCallable(documentDownloader::downloadSponsorList);
     }
 
     @Override
     public Flux<Sponsor> getSponsors() {
             return Flux.using(
-                    () -> Files.lines(Path.of(sponsorProperties.getDownloadPath())),
+                    () -> Files.lines(Path.of(documentDownloader.getPathToFile())),
                             stringStream -> Flux.defer(() -> Flux.fromStream(stringStream)),
                             BaseStream::close)
                     .skip(1)

@@ -5,6 +5,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface SponsorService {
+    Mono<Boolean> updateSponsorList();
     Flux<Sponsor> getSponsors();
     Mono<Sponsor> findSponsorByName(String name);
     Flux<Sponsor> findSponsorsMatchingName(String name);

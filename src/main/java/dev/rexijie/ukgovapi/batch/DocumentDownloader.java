@@ -1,5 +1,6 @@
 package dev.rexijie.ukgovapi.batch;
 
+import dev.rexijie.ukgovapi.config.SponsorProperties;
 import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -20,18 +21,35 @@ public class DocumentDownloader {
 
     private final Logger LOG = LoggerFactory.getLogger(DocumentDownloader.class);
     private final Connection connection;
-    private final String FILE_NAME = "downloads/sponsor_list.csv";
+    private final SponsorProperties sponsorProperties;
     @Value("${jsoup.conn.user-agent}")
     private String USER_AGENT;
+    private String lastDownloadLink;
+    private String fileName;
 
-    public DocumentDownloader(Connection connection) {
+    public DocumentDownloader(Connection connection,
+                              SponsorProperties sponsorProperties) {
         this.connection = connection;
+        this.sponsorProperties = sponsorProperties;
     }
 
-    public void downloadSponsorList() {
+    private String generateFileName(String link) {
+        String[] spl = link.split("/");
+        String name = spl[spl.length - 1];
+        return sponsorProperties.getDownloadPath()
+                .concat("/")
+                .concat(name);
+    }
+
+    public String getPathToFile() {
+        if (lastDownloadLink == null) downloadSponsorList();
+        return fileName;
+    }
+
+    public boolean downloadSponsorList() {
         String csvURL = parseHTML();
         Objects.requireNonNull(csvURL);
-        downloadFile(csvURL);
+        return downloadFile(csvURL);
     }
 
     public String parseHTML() {
@@ -41,7 +59,8 @@ public class DocumentDownloader {
             Element downloadAnchor = els.first();
             if (downloadAnchor == null) throw new RuntimeException();
             String href = downloadAnchor.attributes().get("href");
-            LOG.info("Extracted Url: {}", href);
+            LOG.debug("Extracted Url: {}", href);
+            lastDownloadLink = href;
             return href;
         } catch (Exception e) {
             LOG.error("could not establish connection to website");
@@ -49,11 +68,16 @@ public class DocumentDownloader {
         }
     }
 
-    private void downloadFile(@NonNull String link) {
+    private boolean downloadFile(@NonNull String link) {
+        LOG.debug("downloading new file");
         try {
-            File fl = new File(FILE_NAME);
-            if (fl.exists()) fl.delete();
-            fl.getParentFile().mkdirs();
+            fileName = generateFileName(link);
+            File fl = new File(fileName);
+            if (fl.exists()) {
+                LOG.debug("File already exists, deleting files");
+                if (fl.delete()) LOG.debug("File deleted");
+            }
+            if (fl.getParentFile().mkdirs()) LOG.debug("directories created");
 
             URL urlToFile = new URL(link);
             URLConnection urlConnection = urlToFile.openConnection();
@@ -65,21 +89,23 @@ public class DocumentDownloader {
             int contentLength = urlConnection.getContentLength();
             LOG.info("File content length is {} bytes", contentLength);
 
-            InputStream fileStream = urlConnection.getInputStream();
-            OutputStream out = new FileOutputStream(FILE_NAME);
+            OutputStream out = new FileOutputStream(fileName);
 
             byte[] buffer = new byte[4096];
             int downloaded = 0;
             int length;
-            while ((length = fileStream.read(buffer)) != -1) {
+            while ((length = urlConnection.getInputStream().read(buffer)) != -1) {
                 out.write(buffer, 0, length);
                 downloaded += length;
                 LOG.debug("Download Status: " + (downloaded * 100) / (contentLength * 1.0) + "%");
             }
+            return true;
         } catch (RuntimeException ex) {
             LOG.warn(ex.getMessage());
+            return false;
         } catch (IOException e) {
             LOG.error(e.getMessage());
+            return false;
         }
     }
 }
