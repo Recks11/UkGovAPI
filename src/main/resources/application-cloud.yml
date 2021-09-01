@@ -1,6 +1,6 @@
 sponsors:
   url: https://www.gov.uk/government/publications/register-of-licensed-sponsors-workers
-  download_path: downloads/sponsor_list.csv
+  download_path: downloads
 
 spring:
   data:

@@ -10,7 +10,7 @@
     </parent>
     <groupId>dev.rexijie</groupId>
     <artifactId>UkGovAPI</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>UkGovAPI</name>
     <description>Demo project for Spring Boot</description>
     <properties>
@@ -51,10 +51,10 @@
             <version>${opencsv.cersion}</version>
         </dependency>
         <!--DB-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>-->
+<!--        </dependency>-->
 
         <!--test -->
         <dependency>
