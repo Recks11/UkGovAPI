@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+cd scripts
+
 LOCATION="$(dirname "$(pwd)")"
 
 echo "----------- Building Docker Image ----------"
