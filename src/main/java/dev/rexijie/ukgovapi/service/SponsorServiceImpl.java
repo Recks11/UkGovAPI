@@ -1,0 +1,64 @@
+package dev.rexijie.ukgovapi.service;
+
+import dev.rexijie.ukgovapi.config.SponsorProperties;
+import dev.rexijie.ukgovapi.converter.SponsorMapper;
+import dev.rexijie.ukgovapi.errors.SponsorNotFoundException;
+import dev.rexijie.ukgovapi.model.Sponsor;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.stream.BaseStream;
+
+@Service
+public class SponsorServiceImpl implements SponsorService {
+
+    private final SponsorProperties sponsorProperties;
+
+    public SponsorServiceImpl(SponsorProperties sponsorProperties) {
+        this.sponsorProperties = sponsorProperties;
+    }
+
+    @Override
+    public Flux<Sponsor> getSponsors() {
+            return Flux.using(
+                    () -> Files.lines(Path.of(sponsorProperties.getDownloadPath())),
+                            stringStream -> Flux.defer(() -> Flux.fromStream(stringStream)),
+                            BaseStream::close)
+                    .skip(1)
+                    .map(SponsorMapper::parseCsvLine)
+                    .map(SponsorMapper::toSponsor);
+    }
+
+    @Override
+    public Mono<Sponsor> findSponsorByName(String name) {
+        return getSponsors()
+                .filter(sponsor -> sponsor.name().equals(name))
+                .singleOrEmpty()
+                .switchIfEmpty(Mono.error(new SponsorNotFoundException("Sponsor named "+name+ " does not exist")));
+    }
+
+    @Override
+    public Flux<Sponsor> findSponsorsMatchingName(String name) {
+        return getSponsors()
+                .filter(sponsor -> sponsor.name().contains(name))
+                .switchIfEmpty(Mono.error(new SponsorNotFoundException("Sponsor of type "+name+ " does not exist")));
+    }
+
+    @Override
+    public Flux<Sponsor> getSponsorsWithType(String type) {
+        return getSponsors()
+                .filter(sponsor -> sponsor.type()
+                        .equals(SponsorMapper.getSponsorTypeEnum(type)))
+                .switchIfEmpty(Mono.error(new SponsorNotFoundException("Sponsor of type "+type+ " does not exist")));
+    }
+
+    @Override
+    public Flux<Sponsor> getSponsorsWithType(String type, int start, int size) {
+        return getSponsorsWithType(type)
+                .skip(start)
+                .take(size);
+    }
+}

@@ -1,0 +1,13 @@
+{
+  "properties": [
+    {
+      "name": "jsoup.url",
+      "type": "java.lang.String",
+      "description": "URL for the UK Gov Website sponsor list download page."
+    },
+    {
+      "name": "jsoup.conn.user-agent",
+      "type": "java.lang.String",
+      "description": "User agent for all connections."
+    }
+  ] }

@@ -1,0 +1,17 @@
+sponsors:
+  url: https://www.gov.uk/government/publications/register-of-licensed-sponsors-workers
+  download_path: downloads/sponsor_list.csv
+
+spring:
+  data:
+    mongodb:
+      username: idea
+      password: pa9451w0rd
+      database: uk_sponsors_list
+      auto-index-creation: true
+  application:
+    name: UkGovApplication
+server:
+  servlet:
+    context-path: /api
+  shutdown: graceful
