@@ -3,15 +3,22 @@ sponsors:
   download_path: downloads
 
 spring:
-  data:
-    mongodb:
-      username: idea
-      password: pa9451w0rd
-      database: uk_sponsors_list
-      auto-index-creation: true
   application:
     name: UkGovApplication
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${DISCOVERY_URL:https://discovery.rexijie.dev/eureka/}
+
 server:
   servlet:
     context-path: /api
   shutdown: graceful
+
+logging:
+  level:
+    com:
+      netflix:
+        eureka: OFF
+        discovery: OFF
