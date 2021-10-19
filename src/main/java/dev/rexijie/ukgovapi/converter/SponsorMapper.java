@@ -10,6 +10,8 @@ import reactor.util.Loggers;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class SponsorMapper {
     private static final Logger LOG = Loggers.getLogger(SponsorMapper.class);
@@ -39,10 +41,10 @@ public class SponsorMapper {
 
             return new Sponsor(clean(line[0]), clean(line[1]), clean(line[2]),
                     getSponsorTypeEnum(type),
-                    getRatingsEnum(rating), clean(line[4]));
+                    getRatingsEnum(rating), new HashSet<>(Set.of(clean(line[4]))));
         } catch (Exception ex) {
             LOG.error("Error converting line: {}", Arrays.toString(line));
-            return new Sponsor(line[0], line[1], line[2], SponsorType.UNKNOWN, Rating.UNKNOWN, line[4]);
+            return new Sponsor(line[0], line[1], line[2], SponsorType.UNKNOWN, Rating.UNKNOWN, new HashSet<>(Set.of(line[4])));
         }
     }
 

@@ -15,20 +15,11 @@
     <description>Demo project for Spring Boot</description>
     <properties>
         <java.version>16</java.version>
-        <jsoup.version>1.14.2</jsoup.version>
-        <opencsv.cersion>5.5</opencsv.cersion>
+        <jsoup.version>1.14.3</jsoup.version>
+        <opencsv.cersion>5.5.2</opencsv.cersion>
     </properties>
     <dependencies>
-        <!--processing-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-batch</artifactId>-->
-<!--        </dependency>-->
         <!--web-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-hateoas</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -50,12 +41,6 @@
             <artifactId>opencsv</artifactId>
             <version>${opencsv.cersion}</version>
         </dependency>
-        <!--DB-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>-->
-<!--        </dependency>-->
-
         <!--test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

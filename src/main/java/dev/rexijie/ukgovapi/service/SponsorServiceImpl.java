@@ -40,16 +40,19 @@ public class SponsorServiceImpl implements SponsorService {
     @Override
     public Mono<Sponsor> findSponsorByName(String name) {
         return getSponsors()
-                .filter(sponsor -> sponsor.name().equals(name))
-                .singleOrEmpty()
-                .switchIfEmpty(Mono.error(new SponsorNotFoundException("Sponsor named "+name+ " does not exist")));
+                .filter(sponsor -> sponsor.name().equalsIgnoreCase(name))
+                .reduce((sponsor, sponsor2) -> {
+                    sponsor.Route().addAll(sponsor2.Route());
+                    return sponsor;
+                })
+                .switchIfEmpty(Mono.error(new SponsorNotFoundException("No company called "+name+ " exist in the list of sponsors")));
     }
 
     @Override
     public Flux<Sponsor> findSponsorsMatchingName(String name) {
         return getSponsors()
-                .filter(sponsor -> sponsor.name().contains(name))
-                .switchIfEmpty(Mono.error(new SponsorNotFoundException("Sponsor of type "+name+ " does not exist")));
+                .filter(sponsor -> sponsor.name().toLowerCase().contains(name))
+                .switchIfEmpty(Mono.error(new SponsorNotFoundException("No company named "+name+ " exist in the sponsor list :(")));
     }
 
     @Override

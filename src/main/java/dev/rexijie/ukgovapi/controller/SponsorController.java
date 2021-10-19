@@ -49,17 +49,17 @@ public class SponsorController {
     }
 
     private Mono<Sponsor> getSponsorByName(String name) {
-        if (name == null) throw new SponsorNotFoundException("Sponsor was not found");
+        if (name == null) throw new SponsorNotFoundException("what are you looking for?");
         return sponsorService.findSponsorByName(name);
     }
 
     private Flux<Sponsor> getSponsorsMatchingName(String name) {
-        if (name == null) throw new SponsorNotFoundException("Sponsor was not found");
+        if (name == null) throw new SponsorNotFoundException("what are you looking for?");
         return sponsorService.findSponsorsMatchingName(name);
     }
 
     private Flux<Sponsor> getSponsorFromType(String type, int size, int page) {
-        if (type == null) throw new SponsorNotFoundException("Sponsor was not found");
+        if (type == null) throw new SponsorNotFoundException("what are you looking for?");
         if (size < 0) size = 25;
         if (page < 0) page = 1;
         int start = (page - 1) * size;
