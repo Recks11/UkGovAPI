@@ -16,7 +16,7 @@ public class ParserConfig {
 
     @Bean
     Connection parser() {
-        return Jsoup.connect(sponsorProperties.getUrl())
+        return Jsoup.connect(sponsorProperties.getSponsorListPage())
                 .userAgent(USER_AGENT);
     }
 }

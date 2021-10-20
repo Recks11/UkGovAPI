@@ -36,7 +36,7 @@ public class DocumentDownloader {
     private String generateFileName(String link) {
         String[] spl = link.split("/");
         String name = spl[spl.length - 1];
-        return sponsorProperties.getDownloadPath()
+        return sponsorProperties.getDownloadLocation()
                 .concat("/")
                 .concat(name);
     }
@@ -47,9 +47,10 @@ public class DocumentDownloader {
     }
 
     public boolean downloadSponsorList() {
-        String csvURL = parseHTML();
-        Objects.requireNonNull(csvURL);
-        return downloadFile(csvURL);
+        String downloadUrl = sponsorProperties.hasDirectLink() ?
+                sponsorProperties.getDirectLink() : parseHTML();
+        Objects.requireNonNull(downloadUrl);
+        return downloadFile(downloadUrl);
     }
 
     public String parseHTML() {

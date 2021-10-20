@@ -9,8 +9,8 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>dev.rexijie</groupId>
-    <artifactId>UkGovAPI</artifactId>
-    <version>1.0.0</version>
+    <artifactId>ukgovapi</artifactId>
+    <version>1.0.1</version>
     <name>UkGovAPI</name>
     <description>Demo project for Spring Boot</description>
     <properties>
@@ -20,6 +20,11 @@
         <spring-cloud.version>2020.0.3</spring-cloud.version>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
         <!--web-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -82,10 +87,23 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
+                    <layers>
+                        <enabled>true</enabled>
+                    </layers>
                     <image>
                         <layout>LAYERED_JAR</layout>
                     </image>
+                    <imageName>rexijie/${project.artifactId}:${project.version}</imageName>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>build oci image</id>
+                        <goals>
+                            <goal>build-image</goal>
+                        </goals>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

@@ -4,6 +4,8 @@ import dev.rexijie.ukgovapi.batch.DocumentDownloader;
 import dev.rexijie.ukgovapi.converter.SponsorMapper;
 import dev.rexijie.ukgovapi.errors.SponsorNotFoundException;
 import dev.rexijie.ukgovapi.model.Sponsor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -14,7 +16,7 @@ import java.util.stream.BaseStream;
 
 @Service
 public class SponsorServiceImpl implements SponsorService {
-
+    private static final Logger LOG = LoggerFactory.getLogger(SponsorServiceImpl.class);
     private final DocumentDownloader documentDownloader;
 
     public SponsorServiceImpl(DocumentDownloader documentDownloader) {
@@ -28,13 +30,13 @@ public class SponsorServiceImpl implements SponsorService {
 
     @Override
     public Flux<Sponsor> getSponsors() {
-            return Flux.using(
-                    () -> Files.lines(Path.of(documentDownloader.getPathToFile())),
-                            stringStream -> Flux.defer(() -> Flux.fromStream(stringStream)),
-                            BaseStream::close)
-                    .skip(1)
-                    .map(SponsorMapper::parseCsvLine)
-                    .map(SponsorMapper::toSponsor);
+        return Flux.using(
+                        () -> Files.lines(Path.of(documentDownloader.getPathToFile())),
+                        stringStream -> Flux.defer(() -> Flux.fromStream(stringStream)),
+                        BaseStream::close)
+                .skip(1)
+                .map(SponsorMapper::parseCsvLine)
+                .map(SponsorMapper::toSponsor);
     }
 
     @Override
@@ -45,14 +47,14 @@ public class SponsorServiceImpl implements SponsorService {
                     sponsor.Route().addAll(sponsor2.Route());
                     return sponsor;
                 })
-                .switchIfEmpty(Mono.error(new SponsorNotFoundException("No company called "+name+ " exist in the list of sponsors")));
+                .switchIfEmpty(Mono.error(new SponsorNotFoundException("No company called " + name + " exist in the list of sponsors")));
     }
 
     @Override
     public Flux<Sponsor> findSponsorsMatchingName(String name) {
         return getSponsors()
                 .filter(sponsor -> sponsor.name().toLowerCase().contains(name))
-                .switchIfEmpty(Mono.error(new SponsorNotFoundException("No company named "+name+ " exist in the sponsor list :(")));
+                .switchIfEmpty(Mono.error(new SponsorNotFoundException("No company named " + name + " exist in the sponsor list :(")));
     }
 
     @Override
@@ -60,7 +62,7 @@ public class SponsorServiceImpl implements SponsorService {
         return getSponsors()
                 .filter(sponsor -> sponsor.type()
                         .equals(SponsorMapper.getSponsorTypeEnum(type)))
-                .switchIfEmpty(Mono.error(new SponsorNotFoundException("Sponsor of type "+type+ " does not exist")));
+                .switchIfEmpty(Mono.error(new SponsorNotFoundException("Sponsor of type " + type + " does not exist")));
     }
 
     @Override

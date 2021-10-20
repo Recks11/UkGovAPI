@@ -6,22 +6,42 @@ import org.springframework.boot.context.properties.ConstructorBinding;
 @ConstructorBinding
 @ConfigurationProperties(prefix = "sponsors")
 public class SponsorProperties {
-    private String downloadPath;
-    private String url;
+    private String sponsorListPage;
+    private String directLink;
+    private String downloadLocation;
 
-    public String getDownloadPath() {
-        return downloadPath;
+    public SponsorProperties(String sponsorListPage, String directLink, String downloadLocation) {
+        this.sponsorListPage = sponsorListPage;
+        this.directLink = directLink;
+        this.downloadLocation = downloadLocation;
     }
 
-    public void setDownloadPath(String downloadPath) {
-        this.downloadPath = downloadPath;
+    public String getSponsorListPage() {
+        return sponsorListPage;
     }
 
-    public String getUrl() {
-        return url;
+    public void setSponsorListPage(String sponsorListPage) {
+        this.sponsorListPage = sponsorListPage;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public String getDownloadLocation() {
+        return downloadLocation;
+    }
+
+    public void setDownloadLocation(String downloadLocation) {
+        this.downloadLocation = downloadLocation;
+    }
+
+    public String getDirectLink() {
+        return directLink;
+    }
+
+    public void setDirectLink(String directLink) {
+        this.directLink = directLink;
+    }
+
+    public boolean hasDirectLink() {
+        return this.directLink != null && this.directLink.matches(
+                "https?://(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)");
     }
 }
