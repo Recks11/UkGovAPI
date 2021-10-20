@@ -90,10 +90,10 @@
                     <layers>
                         <enabled>true</enabled>
                     </layers>
+                    <layout>JAR</layout>
                     <image>
-                        <layout>LAYERED_JAR</layout>
+                        <name>rexijie/${project.artifactId}:${project.version}</name>
                     </image>
-                    <imageName>rexijie/${project.artifactId}:${project.version}</imageName>
                 </configuration>
                 <executions>
                     <execution>
