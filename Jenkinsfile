@@ -32,12 +32,12 @@ pipeline {
 				sh 'echo "project version $TAG_SELECTOR'
 				sh "docker push rexijie/ukgovapi:$TAG_SELECTOR"
 			}
-		}
-	}
 
-	post {
-		always {
-			sh 'docker logout'
+			post {
+                always {
+                    sh 'docker logout'
+                }
+            }
 		}
 	}
 
