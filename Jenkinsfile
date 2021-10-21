@@ -22,6 +22,12 @@ pipeline {
             }
         }
 
+        stage('build image') {
+            steps {
+                sh 'mvn package -DskipTests'
+            }
+        }
+
 		stage('PUSH_IMAGE') {
 			steps {
 			    script {
