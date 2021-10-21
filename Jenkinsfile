@@ -2,8 +2,8 @@ def TAG_SELECTOR = "UNINTIALIZED"
 pipeline {
 	agent { label 'java-small' }
 	tools {
-	    jdk: 'JDK 17'
-	    maven: 'Maven 3'
+	    jdk 'JDK 17'
+	    maven 'Maven 3'
 	}
 	environment {
 		DOCKERHUB_CREDENTIALS=credentials('DOCKER_HUB_CREDS')
