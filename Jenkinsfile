@@ -34,7 +34,7 @@ pipeline {
                     TAG_SELECTOR = readMavenPom().getVersion()
                 }
 				sh "echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"
-				sh 'echo "project version $TAG_SELECTOR'
+				sh "echo project version $TAG_SELECTOR"
 				sh "docker push rexijie/ukgovapi:$TAG_SELECTOR"
 			}
 
