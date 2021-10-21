@@ -6,13 +6,12 @@ pipeline {
 	    maven 'Maven 3'
 	}
 	environment {
-		DOCKERHUB_CREDENTIALS=credentials('DOCKER_HUB_CREDS')
+		DOCKERHUB_CREDENTIALS=credentials('docker-hub-creds')
 	}
 
 	stages {
 		stage('Build') {
 		    steps {
-		        git url: 'https://github.com/Recks11/UkGovAPI.git', branch: 'main'
                 sh 'mvn clean compile'
 		    }
 		}
