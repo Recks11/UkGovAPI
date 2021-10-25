@@ -44,4 +44,13 @@ public class SponsorProperties {
         return this.directLink != null && this.directLink.matches(
                 "https?://(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)");
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "sponsorListPage='" + sponsorListPage + '\'' +
+                ", directLink='" + directLink + '\'' +
+                ", downloadLocation='" + downloadLocation + '\'' +
+                '}';
+    }
 }
