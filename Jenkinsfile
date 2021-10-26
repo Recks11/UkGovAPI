@@ -1,4 +1,5 @@
-def TAG_SELECTOR = "UNINTIALIZED"
+def IMG_TAG = "UNINTIALIZED"
+def IMG_NAME = ""
 pipeline {
 	agent { label 'java-small' }
 	tools {
@@ -24,18 +25,19 @@ pipeline {
 
         stage('build image') {
             steps {
-                sh 'mvn package -DskipTests'
+                sh 'mvn spring-boot:build-image -DskipTests'
             }
         }
 
 		stage('PUSH_IMAGE') {
 			steps {
 			    script {
-                    TAG_SELECTOR = readMavenPom().getVersion()
+                    IMG_TAG = readMavenPom().getVersion()
+                    IMG_NAME = readMavenPom.getArtifactId()
                 }
 				sh "echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"
 				sh "echo project version $TAG_SELECTOR"
-				sh "docker push rexijie/ukgovapi:$TAG_SELECTOR"
+				sh "docker push rexijie/$IMG_NAME:$IMG_TAG"
 			}
 
 			post {
