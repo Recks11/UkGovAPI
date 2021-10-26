@@ -34,3 +34,4 @@ jobs:
         env:
           HD_DISCOVERY_URL: ${{secrets.EUREKA_DISCOVERY_URL}}
           HD_APP_NAME: UkGovApplication-Heroku
+          HD_SPRING_PROFILES_ACTIVE: cloud
