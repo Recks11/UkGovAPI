@@ -14,7 +14,7 @@
     <name>UkGovAPI</name>
     <description>Demo project for Spring Boot</description>
     <properties>
-        <java.version>16</java.version>
+        <java.version>17</java.version>
         <jsoup.version>1.14.3</jsoup.version>
         <opencsv.cersion>5.5.2</opencsv.cersion>
         <spring-cloud.version>2020.0.3</spring-cloud.version>
@@ -90,20 +90,10 @@
                     <layers>
                         <enabled>true</enabled>
                     </layers>
-                    <layout>JAR</layout>
                     <image>
                         <name>rexijie/${project.artifactId}:${project.version}</name>
                     </image>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>build oci image</id>
-                        <goals>
-                            <goal>build-image</goal>
-                        </goals>
-                        <phase>package</phase>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

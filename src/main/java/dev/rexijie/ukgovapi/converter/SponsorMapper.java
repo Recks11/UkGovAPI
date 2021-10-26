@@ -3,6 +3,7 @@ package dev.rexijie.ukgovapi.converter;
 import com.opencsv.CSVParser;
 import com.opencsv.CSVParserBuilder;
 import dev.rexijie.ukgovapi.constants.Rating;
+import dev.rexijie.ukgovapi.constants.Route;
 import dev.rexijie.ukgovapi.constants.SponsorType;
 import dev.rexijie.ukgovapi.model.Sponsor;
 import reactor.util.Logger;
@@ -62,5 +63,14 @@ public class SponsorMapper {
             case "B rating" -> Rating.B;
             default -> Rating.C;
         };
+    }
+
+    public static Route getRoute(String route) {
+        return switch (route.toLowerCase()) {
+            case "skilled worker" -> Route.SKILLED_WORKER;
+            case "Tier 2 General" -> Route.TIER_2;
+            default -> null;
+        };
+
     }
 }

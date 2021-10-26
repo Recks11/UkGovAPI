@@ -1,16 +1,16 @@
 sponsors:
   sponsor_list_page: https://www.gov.uk/government/publications/register-of-licensed-sponsors-workers
-  download_location: ${FILE_PATH:/tmp}
+  download_location: /tmp
   direct_link: ${CSV_URL:''}
 
 spring:
   application:
-    name: UkGovApplication
+    name: ${APP_NAME}
 
 eureka:
   client:
     service-url:
-      defaultZone: ${DISCOVERY_URL:https://discovery.rexijie.dev/eureka/}
+      defaultZone: ${DISCOVERY_URL}
 
 server:
   servlet:

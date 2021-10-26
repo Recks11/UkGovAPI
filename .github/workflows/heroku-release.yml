@@ -1,0 +1,36 @@
+name: Heroku Deploy
+
+on:
+  push:
+    branches:
+      - release # Changing the branch here would also work
+
+jobs:
+  build:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: adopt
+          java-version: 17
+          cache: maven
+      - name: Run tests
+        run: mvn clean test -Dspring.profiles.active=test
+      - name: Verify
+        run: mvn clean verify -DskipTests
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
+          heroku_email: ${{secrets.HEROKU_EMAIL}}
+        env:
+          DISCOVERY_URL: ${{secrets.EUREKA_DISCOVERY_URL}}
+          APP_NAME: UkGovApplication-Heroku

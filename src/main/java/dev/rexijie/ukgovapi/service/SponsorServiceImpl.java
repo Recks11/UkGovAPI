@@ -12,49 +12,61 @@ import reactor.core.publisher.Mono;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.BaseStream;
 
 @Service
 public class SponsorServiceImpl implements SponsorService {
     private static final Logger LOG = LoggerFactory.getLogger(SponsorServiceImpl.class);
     private final DocumentDownloader documentDownloader;
+    private final Map<String, Sponsor> sponsorMap = new ConcurrentHashMap<>();
+    private final AtomicInteger atomicLength = new AtomicInteger(0);
 
     public SponsorServiceImpl(DocumentDownloader documentDownloader) {
         this.documentDownloader = documentDownloader;
     }
 
     @Override
-    public Mono<Boolean> updateSponsorList() {
-        return Mono.fromCallable(documentDownloader::downloadSponsorList);
+    public Mono<Integer> updateSponsorList() {
+        return Mono.fromCallable(documentDownloader::downloadSponsorList)
+                .flatMapMany(aBoolean -> Flux.using(() -> Files.lines(Path.of(documentDownloader.getPathToFile())),
+                                stringStream -> Flux.defer(() -> Flux.fromStream(stringStream)),
+                                BaseStream::close)
+                        .skip(1)
+                        .map(SponsorMapper::parseCsvLine)
+                        .map(SponsorMapper::toSponsor)
+                        .doOnNext(sponsor -> sponsorMap.merge(sponsor.name(), sponsor, (existing, newSponsor) -> {
+                            existing.Route().addAll(newSponsor.Route());
+                            return existing;
+                        })))
+                .doOnNext(sponsor -> atomicLength.getAndAccumulate(sponsor.name().length(), Math::max)) // get the maximum value
+                .doOnComplete(() -> LOG.debug("Sponsor Map contains %s elements".formatted(String.valueOf(sponsorMap.size()))))
+                .then(Mono.fromCallable(sponsorMap::size));
     }
 
     @Override
     public Flux<Sponsor> getSponsors() {
-        return Flux.using(
-                        () -> Files.lines(Path.of(documentDownloader.getPathToFile())),
-                        stringStream -> Flux.defer(() -> Flux.fromStream(stringStream)),
-                        BaseStream::close)
-                .skip(1)
-                .map(SponsorMapper::parseCsvLine)
-                .map(SponsorMapper::toSponsor);
+        return Flux.fromIterable(sponsorMap.values());
     }
 
     @Override
     public Mono<Sponsor> findSponsorByName(String name) {
-        return getSponsors()
-                .filter(sponsor -> sponsor.name().equalsIgnoreCase(name))
-                .reduce((sponsor, sponsor2) -> {
-                    sponsor.Route().addAll(sponsor2.Route());
-                    return sponsor;
-                })
-                .switchIfEmpty(Mono.error(new SponsorNotFoundException("No company called " + name + " exist in the list of sponsors")));
+        return validateName(name)
+                .then(Mono.fromCallable(() -> sponsorMap.get(name))
+                        .switchIfEmpty(Mono.error(new SponsorNotFoundException("No company called " + name + " exist in the list of sponsors"))));
+
     }
 
     @Override
     public Flux<Sponsor> findSponsorsMatchingName(String name) {
-        return getSponsors()
-                .filter(sponsor -> sponsor.name().toLowerCase().contains(name))
-                .switchIfEmpty(Mono.error(new SponsorNotFoundException("No company named " + name + " exist in the sponsor list :(")));
+        return validateName(name)
+                .thenMany(Flux.fromStream(sponsorMap.keySet().stream())
+                        .filter(spName -> spName.toLowerCase().contains(name.toLowerCase()))
+                        .switchIfEmpty(Flux.error(new SponsorNotFoundException("No company named " + name + " exist in the sponsor list :(")))
+                        .map(sponsorMap::get));
+
     }
 
     @Override
@@ -70,5 +82,13 @@ public class SponsorServiceImpl implements SponsorService {
         return getSponsorsWithType(type)
                 .skip(start)
                 .take(size);
+    }
+
+    @Override
+    public Mono<String> validateName(String name) {
+        if (name == null) throw new SponsorNotFoundException("No name provided");
+        return Mono.fromCallable(atomicLength::get)
+                .flatMap(len -> len >= name.length() ? Mono.just(name) : Mono.error(new SponsorNotFoundException("Invalid name provided")));
+
     }
 }
