@@ -2,11 +2,13 @@ package dev.rexijie.ukgovapi.service;
 
 import dev.rexijie.ukgovapi.batch.DocumentDownloader;
 import dev.rexijie.ukgovapi.converter.SponsorMapper;
+import dev.rexijie.ukgovapi.errors.InvalidRequestException;
 import dev.rexijie.ukgovapi.errors.SponsorNotFoundException;
 import dev.rexijie.ukgovapi.model.Sponsor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -38,7 +40,7 @@ public class SponsorServiceImpl implements SponsorService {
                         .map(SponsorMapper::parseCsvLine)
                         .map(SponsorMapper::toSponsor)
                         .doOnNext(sponsor -> sponsorMap.merge(sponsor.name(), sponsor, (existing, newSponsor) -> {
-                            existing.Route().addAll(newSponsor.Route());
+                            existing.route().addAll(newSponsor.route());
                             return existing;
                         })))
                 .doOnNext(sponsor -> atomicLength.getAndAccumulate(sponsor.name().length(), Math::max)) // get the maximum value
@@ -86,7 +88,8 @@ public class SponsorServiceImpl implements SponsorService {
 
     @Override
     public Mono<String> validateName(String name) {
-        if (name == null) throw new SponsorNotFoundException("No name provided");
+        if (StringUtils.hasLength(name)) throw new SponsorNotFoundException("No name provided");
+        if (name.length() < 3) throw new InvalidRequestException("No name provided");
         return Mono.fromCallable(atomicLength::get)
                 .flatMap(len -> len >= name.length() ? Mono.just(name) : Mono.error(new SponsorNotFoundException("Invalid name provided")));
 
