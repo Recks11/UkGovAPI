@@ -32,7 +32,9 @@ public class SponsorServiceImpl implements SponsorService {
 
     @Override
     public Mono<Integer> updateSponsorList() {
+
         return Mono.fromCallable(documentDownloader::downloadSponsorList)
+                .doOnSuccess(aBoolean -> { if (aBoolean) sponsorMap.clear();})
                 .flatMapMany(aBoolean -> Flux.using(() -> Files.lines(Path.of(documentDownloader.getPathToFile())),
                                 stringStream -> Flux.defer(() -> Flux.fromStream(stringStream)),
                                 BaseStream::close)
@@ -88,7 +90,7 @@ public class SponsorServiceImpl implements SponsorService {
 
     @Override
     public Mono<String> validateName(String name) {
-        if (StringUtils.hasLength(name)) throw new SponsorNotFoundException("No name provided");
+        if (!StringUtils.hasLength(name)) throw new SponsorNotFoundException("No name provided");
         if (name.length() < 3) throw new InvalidRequestException("No name provided");
         return Mono.fromCallable(atomicLength::get)
                 .flatMap(len -> len >= name.length() ? Mono.just(name) : Mono.error(new SponsorNotFoundException("Invalid name provided")));
