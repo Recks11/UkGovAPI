@@ -7,6 +7,13 @@ spring:
   application:
     name: UkGovApplication
 
+app:
+  properties:
+    cors:
+      max-age: 8000
+      allowedMethods: "GET"
+      allowedOrigins: "http://localhost:3000,http://127.0.0.1:3000,http://192.168.1.108:3000"
+
 eureka:
   client:
     enabled: false

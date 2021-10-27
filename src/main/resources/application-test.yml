@@ -7,6 +7,13 @@ spring:
   application:
     name: UkGovApplication
 
+app:
+  properties:
+    cors:
+      max-age: 8000
+      allowedMethods: "GET"
+      allowedOrigins: "*"
+
 eureka:
   client:
     enabled: false
