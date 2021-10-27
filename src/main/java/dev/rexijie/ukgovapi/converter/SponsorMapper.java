@@ -66,10 +66,19 @@ public class SponsorMapper {
     }
 
     public static Route getRoute(String route) {
+        final String voluntaryWorker = Route.VOLUNTARY_WORKER.toString();
         return switch (route.toLowerCase()) {
             case "skilled worker" -> Route.SKILLED_WORKER;
-            case "Tier 2 General" -> Route.TIER_2;
-            default -> null;
+            case "tier 2 general" -> Route.TIER_2;
+            case "intra-company routes" -> Route.INTRA_COMPANY_ROUTE;
+            case "t2 minister of religion" -> Route.T2_RELIGION;
+            case "voluntary workers" -> Route.VOLUNTARY_WORKER;
+            case "religious workers" -> Route.RELIGIOUS_WORKER;
+            case "t2 sportsperson" -> Route.T2_SPORTSPERSON;
+            case "international agreements" -> Route.INTERNATIONAL_AGREEMENTS;
+            case "government authorised exchange" -> Route.GOVERNMENT_AUTHORISED_EXCHANGE;
+            case "creative and sporting" -> Route.CREATIVE_AND_SPORTING;
+            default -> Route.valueOf(route);
         };
 
     }
