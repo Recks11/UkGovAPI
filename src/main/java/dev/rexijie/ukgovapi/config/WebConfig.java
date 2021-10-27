@@ -14,9 +14,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.codec.ServerCodecConfigurer;
+import org.springframework.util.StringUtils;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.reactive.config.EnableWebFlux;
 import org.springframework.web.reactive.result.view.ViewResolver;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Configuration
@@ -35,7 +41,8 @@ public class WebConfig {
     @Bean
     @Order(-1)
     public ErrorWebExceptionHandler errorWebExceptionHandler(ServerProperties serverProperties,
-                                                             WebProperties webProperties, ObjectProvider<ViewResolver> viewResolvers,
+                                                             WebProperties webProperties,
+                                                             ObjectProvider<ViewResolver> viewResolvers,
                                                              ServerCodecConfigurer serverCodecConfigurer,
                                                              ApplicationContext applicationContext) {
         DefaultErrorWebExceptionHandler exceptionHandler = new CustomErrorWebExceptionHandler(customErrorAttributes(),
@@ -48,4 +55,22 @@ public class WebConfig {
         return exceptionHandler;
     }
 
+    @Bean
+    CorsWebFilter corsWebFilter(ApplicationProperties properties) {
+        var allowedMethods = StringUtils.tokenizeToStringArray(
+                properties.cors().allowedMethods(), ",", true, true);
+        var allowedOrigins = StringUtils.tokenizeToStringArray(
+                properties.cors().allowedOrigins(), ",", true, true);
+        CorsConfiguration corsConfig = new CorsConfiguration();
+        corsConfig.setAllowedOrigins(Arrays.asList(allowedOrigins));
+        corsConfig.setMaxAge(properties.cors().maxAge());
+        corsConfig.setAllowedMethods(Arrays.asList(allowedMethods));
+        corsConfig.addAllowedHeader("XX-API-ALLOWED");
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfig);
+
+        return new CorsWebFilter(source);
+    }
 }

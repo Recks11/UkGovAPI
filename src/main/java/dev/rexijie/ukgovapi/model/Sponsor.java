@@ -10,7 +10,7 @@ public record Sponsor(String name,
                       String county,
                       SponsorType type,
                       Rating rating,
-                      Set<String> Route) {
+                      Set<String> route) {
     @Override
     public String toString() {
         return "Sponsor{" +
@@ -19,7 +19,7 @@ public record Sponsor(String name,
                 ", county='" + county + '\'' +
                 ", type=" + type +
                 ", rating=" + rating +
-                ", Route=" + Route +
+                ", route=" + route +
                 '}';
     }
 }

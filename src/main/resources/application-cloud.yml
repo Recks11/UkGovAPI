@@ -3,6 +3,13 @@ sponsors:
   download_location: /tmp
   direct_link: ${CSV_URL:''}
 
+app:
+  properties:
+    cors:
+      max-age: ${CORS_MAX_AGE}
+      allowedMethods: ${CORS_METHODS}
+      allowedOrigins: ${CORS_ORIGINS}
+
 spring:
   application:
     name: ${APP_NAME}
