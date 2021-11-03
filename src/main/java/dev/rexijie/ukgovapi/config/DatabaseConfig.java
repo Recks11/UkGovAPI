@@ -18,7 +18,7 @@ public class DatabaseConfig {
         this.sponsorService = sponsorService;
     }
 
-    @Scheduled(fixedRateString = "PT1H", initialDelayString = "PT10S")
+    @Scheduled(fixedRateString = "PT1H", initialDelayString = "PT5M")
     void fetchSponsorList() {
         sponsorService.updateSponsorList()
                 .doOnSuccess(integer -> LOG.info("fetched new sponsor list with %s items".formatted(integer)))

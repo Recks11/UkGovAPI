@@ -12,6 +12,7 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.PostConstruct;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -34,7 +35,9 @@ public class SponsorServiceImpl implements SponsorService {
     public Mono<Integer> updateSponsorList() {
 
         return Mono.fromCallable(documentDownloader::downloadSponsorList)
-                .doOnSuccess(aBoolean -> { if (aBoolean) sponsorMap.clear();})
+                .doOnSuccess(aBoolean -> {
+                    if (aBoolean) sponsorMap.clear();
+                })
                 .flatMapMany(aBoolean -> Flux.using(() -> Files.lines(Path.of(documentDownloader.getPathToFile())),
                                 stringStream -> Flux.defer(() -> Flux.fromStream(stringStream)),
                                 BaseStream::close)
@@ -95,5 +98,12 @@ public class SponsorServiceImpl implements SponsorService {
         return Mono.fromCallable(atomicLength::get)
                 .flatMap(len -> len >= name.length() ? Mono.just(name) : Mono.error(new SponsorNotFoundException("Invalid name provided")));
 
+    }
+
+    @PostConstruct
+    private void downloadSponsorList() {
+        updateSponsorList()
+                .doOnSuccess(integer -> LOG.info("Finished Executing Startup Event"))
+                .subscribe(integer -> LOG.info("Downloaded Sponsor list containing {} sponsors", integer));
     }
 }

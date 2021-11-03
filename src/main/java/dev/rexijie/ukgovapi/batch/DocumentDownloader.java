@@ -88,7 +88,7 @@ public class DocumentDownloader {
             if (!contentType.equals("text/csv")) throw new RuntimeException("Downloadable file not a CSV");
 
             int contentLength = urlConnection.getContentLength();
-            LOG.info("Downloading Sponsor list");
+            LOG.debug("Downloading Sponsor list");
             LOG.debug("File content length is {} MB", (contentLength / 1E6));
 
             OutputStream out = new FileOutputStream(fileName);
@@ -102,7 +102,7 @@ public class DocumentDownloader {
                 LOG.debug("Download Status: " + (downloaded * 100) / (contentLength * 1.0) + "%");
             }
             LOG.debug("Downloaded "+ (contentLength / 1E6) + "MB");
-            LOG.info("Successfully download sponsor list");
+            LOG.debug("Successfully download sponsor list");
             return true;
         } catch (RuntimeException ex) {
             LOG.warn(ex.getMessage());
