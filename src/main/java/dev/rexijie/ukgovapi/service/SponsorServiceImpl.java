@@ -11,14 +11,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.PostConstruct;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.BaseStream;
 
 @Service
 public class SponsorServiceImpl implements SponsorService {
@@ -35,19 +34,19 @@ public class SponsorServiceImpl implements SponsorService {
     public Mono<Integer> updateSponsorList() {
 
         return Mono.fromCallable(documentDownloader::downloadSponsorList)
+                .subscribeOn(Schedulers.boundedElastic())
                 .doOnSuccess(aBoolean -> {
                     if (aBoolean) sponsorMap.clear();
                 })
-                .flatMapMany(aBoolean -> Flux.using(() -> Files.lines(Path.of(documentDownloader.getPathToFile())),
-                                stringStream -> Flux.defer(() -> Flux.fromStream(stringStream)),
-                                BaseStream::close)
-                        .skip(1)
-                        .map(SponsorMapper::parseCsvLine)
-                        .map(SponsorMapper::toSponsor)
-                        .doOnNext(sponsor -> sponsorMap.merge(sponsor.name(), sponsor, (existing, newSponsor) -> {
-                            existing.route().addAll(newSponsor.route());
-                            return existing;
-                        })))
+                .map(aBoolean -> Path.of(documentDownloader.getPathToFile()))
+                .flatMapMany(FileService::readFile)
+                .skip(1) // skip the headers
+                .map(SponsorMapper::parseCsvLine)
+                .map(SponsorMapper::toSponsor)
+                .doOnNext(sponsor -> sponsorMap.merge(sponsor.name(), sponsor, (existing, newSponsor) -> {
+                    existing.route().addAll(newSponsor.route());
+                    return existing;
+                }))
                 .doOnNext(sponsor -> atomicLength.getAndAccumulate(sponsor.name().length(), Math::max)) // get the maximum value
                 .doOnComplete(() -> LOG.debug("Sponsor Map contains %s elements".formatted(String.valueOf(sponsorMap.size()))))
                 .then(Mono.fromCallable(sponsorMap::size));
@@ -62,6 +61,7 @@ public class SponsorServiceImpl implements SponsorService {
     public Mono<Sponsor> findSponsorByName(String name) {
         return validateName(name)
                 .then(Mono.fromCallable(() -> sponsorMap.get(name))
+                        .doOnNext((s) -> LOG.debug("Found %s".formatted(s)))
                         .switchIfEmpty(Mono.error(new SponsorNotFoundException("No company called " + name + " exist in the list of sponsors"))));
 
     }
@@ -72,7 +72,8 @@ public class SponsorServiceImpl implements SponsorService {
                 .thenMany(Flux.fromStream(sponsorMap.keySet().stream())
                         .filter(spName -> spName.toLowerCase().contains(name.toLowerCase()))
                         .switchIfEmpty(Flux.error(new SponsorNotFoundException("No company named " + name + " exist in the sponsor list :(")))
-                        .map(sponsorMap::get));
+                        .map(sponsorMap::get))
+                        .doOnNext((s) -> LOG.debug("Found %s".formatted(s)));
 
     }
 

@@ -1,5 +1,6 @@
 package dev.rexijie.ukgovapi.config;
 
+import dev.rexijie.ukgovapi.batch.DocumentDownloader;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
@@ -26,5 +27,10 @@ public class ParserConfig {
         LOG.info("connecting to url: %s".formatted(url));
         return Jsoup.connect(url)
                 .userAgent(USER_AGENT);
+    }
+
+    @Bean
+    DocumentDownloader documentDownloader() {
+        return new DocumentDownloader(parser(), sponsorProperties);
     }
 }

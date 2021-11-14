@@ -9,14 +9,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.Objects;
 
-@Component
+
 public class DocumentDownloader {
 
     private final Logger LOG = LoggerFactory.getLogger(DocumentDownloader.class);
@@ -50,7 +52,8 @@ public class DocumentDownloader {
         String downloadUrl = sponsorProperties.hasDirectLink() ?
                 sponsorProperties.getDirectLink() : parseHTML();
         Objects.requireNonNull(downloadUrl);
-        return downloadFile(downloadUrl);
+
+        return downloadNio(downloadUrl);
     }
 
     public String parseHTML() {
@@ -69,47 +72,33 @@ public class DocumentDownloader {
         }
     }
 
-    private boolean downloadFile(@NonNull String link) {
-        LOG.debug("downloading new file");
+    private boolean downloadNio(@NonNull String link) {
         try {
-            fileName = generateFileName(link);
-            File fl = new File(fileName);
-            if (fl.exists()) {
-                LOG.debug("File already exists, deleting files");
-                if (fl.delete()) LOG.debug("File deleted");
-            }
-            if (fl.getParentFile().mkdirs()) LOG.debug("directories created");
-
+            LOG.debug("Downloading Sponsor list");
+            fileName = prepareDownload(link);
             URL urlToFile = new URL(link);
             URLConnection urlConnection = urlToFile.openConnection();
             urlConnection.setRequestProperty("user-agent", USER_AGENT);
-            String contentType = urlConnection.getContentType();
-
-            if (!contentType.equals("text/csv")) throw new RuntimeException("Downloadable file not a CSV");
-
-            int contentLength = urlConnection.getContentLength();
-            LOG.debug("Downloading Sponsor list");
-            LOG.debug("File content length is {} MB", (contentLength / 1E6));
-
-            OutputStream out = new FileOutputStream(fileName);
-
-            byte[] buffer = new byte[4096];
-            int downloaded = 0;
-            int length;
-            while ((length = urlConnection.getInputStream().read(buffer)) != -1) {
-                out.write(buffer, 0, length);
-                downloaded += length;
-                LOG.debug("Download Status: " + (downloaded * 100) / (contentLength * 1.0) + "%");
-            }
-            LOG.debug("Downloaded "+ (contentLength / 1E6) + "MB");
-            LOG.debug("Successfully download sponsor list");
+            ReadableByteChannel readableByteChannel = Channels.newChannel(urlConnection.getInputStream());
+            FileOutputStream fileOutputStream = new FileOutputStream(fileName);
+            long total = fileOutputStream.getChannel()
+                    .transferFrom(readableByteChannel, 0, urlConnection.getContentLengthLong());
+            LOG.debug("File content length is {} MB", (total / 1E6));
             return true;
-        } catch (RuntimeException ex) {
+        } catch (Exception ex) {
             LOG.warn(ex.getMessage());
             return false;
-        } catch (IOException e) {
-            LOG.error(e.getMessage());
-            return false;
         }
+    }
+
+    private String prepareDownload(String link) {
+        String filename = generateFileName(link);
+        File fl = new File(filename);
+        if (fl.exists()) {
+            LOG.debug("File already exists, deleting files");
+            if (fl.delete()) LOG.debug("File deleted");
+        }
+        if (fl.getParentFile().mkdirs()) LOG.debug("directories created");
+        return filename;
     }
 }
